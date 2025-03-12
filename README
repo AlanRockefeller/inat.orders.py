@@ -1,0 +1,195 @@
+# iNaturalist Order / Family Counter
+
+# Version 1.0
+
+# By Alan Rockefeller - March 12, 2025
+
+## Overview
+
+inat.orders.py is a command-line utility designed to help researchers extract taxonomic information for observations from iNaturalist. This information is useful when applying for a transportation permit to get specimens into a herbarium in Ecuador, and for summarizing information from iNaturalist observations for scientific papers.  It retrieves the taxonomic order and family (optional) for given observation IDs, while implementing responsible API access with rate limiting and retry logic.
+
+## Features
+
+- **Taxonomic Information Retrieval**: Extract order and family information from iNaturalist observation IDs
+- **Large runs are ok!**: Even large numbers of iNaturalist numbers can be processed into reports with this code
+- **Smart Rate Limiting / Retries**: Respects iNaturalist API rate limits to prevent request throttling
+- **Hierarchical Summaries**: Provides summaries of orders and optionally families within orders when processing multiple observations
+- **Flexible Output Options**: Customize the level of taxonomic detail and debugging information
+
+## Installation
+
+### Prerequisites
+
+- Python 3.6 or higher
+- pip (Python package installer)
+
+### Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/inat.orders.py.git
+   cd inat.orders.py
+   ```
+
+2. Install the required dependencies:
+   ```bash
+   pip install requests
+   ```
+
+## Usage
+
+### Basic Usage
+
+To look up the order for a single iNaturalist observation:
+
+```bash
+python3 inat.orders.py 135240378
+```
+
+For multiple observations, with family information
+
+```bash
+python3 inat.orders.py --family 262201758 262274361 261937401 261862641 262201653
+```
+
+### Command Line Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `observation_ids` | One or more iNaturalist observation IDs (required) |
+| `--family` | Include family taxonomic rank in the output and summaries |
+| `--delay DELAY` | Minimum delay in seconds between API calls (default: 1.0) |
+| `--count-api-calls` | Print the total number of API calls made |
+| `--debug` | Enable debug output for rate limiting and API calls |
+
+## Output Format
+
+### Single Observation (Order Only)
+```
+135240378: Agaricales
+```
+
+### Single Observation (With Family)
+```
+135240378: Order: Agaricales Family: Hymenogastraceae
+```
+
+### Multiple Observations (With Order Summary)
+```
+135240378: Agaricales
+23456789: Russulales
+34567890: Agaricales
+
+Summary by Order:
+     2  Agaricales
+     1  Russulales
+```
+
+### Multiple Observations (With Order and Family Summaries)
+```
+12345678: Order: Agaricales Family: Amanitaceae
+23456789: Order: Russulales Family: Russulaceae
+34567890: Order: Agaricales Family: Psathyrellaceae
+
+Summary by Order:
+     2  Agaricales
+     1  Russulales
+
+Families within Agaricales:
+     1  Amanitaceae
+     1  Psathyrellaceae
+
+Families within Russulales:
+     1  Russulaceae
+```
+
+## How It Works
+
+1. **API Request Management**: The `RateLimiter` class ensures that requests to the iNaturalist API respect rate limits by enforcing a minimum delay between consecutive requests.
+
+2. **Taxonomic Information Retrieval**: For each observation ID:
+   - The tool first requests basic observation data from the iNaturalist API
+   - It extracts the taxon information from the response
+   - If the taxon is not already at the order level (or family level when requested), it traverses the ancestry chain to find the appropriate taxonomic ranks
+   - For efficiency, it makes additional API calls only when necessary to retrieve missing taxonomic information
+
+3. **Summary Generation**: When processing multiple observations:
+   - The tool counts occurrences of each order
+   - When the `--family` flag is provided, it also organizes families within their respective orders
+   - The summary is sorted by frequency (most common first)
+   - Unknown or error cases are tracked separately
+
+## Advanced Usage
+
+### Processing Observation IDs from a File
+
+You can process a list of observation IDs from a file using shell input redirection:
+
+```bash
+python inat_orders.py $(cat observation_ids.txt) --family
+```
+
+Or using `xargs`:
+
+```bash
+cat observation_ids.txt | xargs python inat_orders.py --family
+```
+
+### Redirecting Output to a File
+
+Save the output to a file:
+
+```bash
+python inat.orders.py 12345678 23456789 34567890 --family > taxonomy_report.txt
+```
+
+### Error Handling
+
+When taxonomic information cannot be retrieved, the tool provides informative error messages:
+
+```
+12345678: Error - No results found
+23456789: Class: Magnoliopsida
+34567890: Error - API request failed: 404 Client Error: Not Found
+```
+
+Errors will show up in summaries as unknown - this isnt necessarily an error, as some iNaturalist observations are already at order level, so don't have a family - or some genera aren't in any known family (incertae sedis) so there is no family information to get.
+
+## API Rate Limits and Responsible Usage
+
+This tool is designed to be respectful of iNaturalist's API rate limits. By default, it waits 1 second between API calls, which should be sufficient for most use cases. For larger batch processing, consider increasing the delay using the `--delay` parameter.
+
+iNaturalist's API documentation states that:
+- You should not make more than 100 requests per minute
+- You should respect HTTP 429 responses by backing off (this tool implements exponential backoff)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the GNU GPL version 3 - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [iNaturalist](https://www.inaturalist.org/) for providing the API that makes this tool possible
+- The global community of naturalists and citizen scientists who contribute observations to iNaturalist
+- The Ohio Mushroom DNA Lab (OMDL)
+
+## Contact
+
+If you have any questions or feedback, please open an issue on this repository or contact Alan Rockefeller via email, social media or carrier pigeon.
+
+## Donations
+
+If you like this tool, please consider making a donation to the Ohio Mushroom DNA Lab.
+https://www.ohiomushroomdnalab.com/donate
+
+---
