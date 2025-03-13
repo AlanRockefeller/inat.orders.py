@@ -1,3 +1,4 @@
-pull_requests:
+# .coderabbit.yaml
+reviews:
   branches:
-    - test
+    - test  # Valid configuration for targeting test branch
