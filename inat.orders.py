@@ -8,6 +8,8 @@
 
 # For more information see https://github.com/AlanRockefeller/inat.orders.py
 
+# Sample output: https://images.mushroomobserver.org/obs.with.families.out.txt
+
 import sys
 import requests
 import time
