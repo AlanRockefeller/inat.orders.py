@@ -1,12 +1,14 @@
 # iNaturalist Order / Family Counter
 
-# Version 1.0
+# Version 1.1
 
-# By Alan Rockefeller - March 12, 2025
+# By Alan Rockefeller - March 17, 2025
 
 ## Overview
 
 inat.orders.py is a command-line utility designed to help researchers extract taxonomic information for observations from iNaturalist. This information is useful when applying for a transportation permit to get specimens into a herbarium in Ecuador, and for summarizing information from iNaturalist observations for scientific papers.  It retrieves the taxonomic order and family (optional) for given observation IDs, while implementing responsible API access with rate limiting and retry logic.
+
+It can also do a similar analysis on the usernames associated with iNaturalist observations - this is designed to be able to make a list of people to thank for sending in samples.
 
 ## Sample output
 
@@ -26,6 +28,9 @@ alan@Dell-9700 ~/inat.orders.py (test)> python3 inat.orders.py --family (over 30
 - **Smart Rate Limiting / Retries**: Respects iNaturalist API rate limits to prevent request throttling
 - **Hierarchical Summaries**: Provides summaries of orders and optionally families within orders when processing multiple observations
 - **Flexible Output Options**: Customize the level of taxonomic detail and debugging information
+- **Count users**: Record who is making these observations
+- **File input**: Can take input iNaturalist observation numbers on the command line, or in a file (one observation per line)
+
 
 ## Installation
 
