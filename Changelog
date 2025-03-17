@@ -1,0 +1,12 @@
+# Changelog
+
+## 1.1 - [2025-03-17]
+
+- It can also do a similar analysis on the usernames associated with iNaturalist observations - this is designed to be able to make a list of people to thank for sending in samples.
+
+- **Count users**: Record who is making these observations with the --users command line argument
+- **File input**: Can take input iNaturalist observation numbers on the command line, or in a file (one observation per line) with --file <filename>
+
+## [1.0] - [Initial release 2025-03-12]
+
+- Initial release
