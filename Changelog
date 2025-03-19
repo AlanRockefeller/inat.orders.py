@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2 - [2025-03-19]
+
+- Added better API rate limiting
+
 ## 1.1 - [2025-03-17]
 
 - It can also do a similar analysis on the usernames associated with iNaturalist observations - this is designed to be able to make a list of people to thank for sending in samples.
