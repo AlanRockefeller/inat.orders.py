@@ -1,6 +1,6 @@
 # iNaturalist Order / Family Counter
 
-# Version 1.1
+# Version 1.2
 
 # By Alan Rockefeller - March 17, 2025
 
@@ -75,24 +75,52 @@ python3 inat.orders.py --family 262201758 262274361 261937401 261862641 26220165
 | `observation_ids` | One or more iNaturalist observation IDs (required) |
 | `--family` | Include family taxonomic rank in the output and summaries |
 | `--delay DELAY` | Minimum delay in seconds between API calls (default: 1.0) |
+| `--max-delay MAX_DELAY` | Maximum delay between API calls when rate limited (default: 10.0) |
+| `--retry-delay RETRY_DELAY` | Initial retry delay in seconds (default: 5.0) |
+| `--retries RETRIES` | Maximum number of retry attempts (default: 5) |
+| `--batch-size BATCH_SIZE` | Process observations in batches of this size (default: 1000) |
+| `--batch-pause BATCH_PAUSE` | Pause in seconds between batches (default: 60.0) |
+| `--resume-from OBS_ID` | Resume from a specific observation ID |
 | `--count-api-calls` | Print the total number of API calls made |
 | `--debug` | Enable debug output for rate limiting and API calls |
+
+### Examples
+
+**Basic lookup with order information only:**
+```bash
+python taxa_lookup.py 12345678 23456789 34567890
+```
+
+**Include family taxonomic rank:**
+```bash
+python taxa_lookup.py 12345678 23456789 34567890 --family
+```
+
+**Increase the delay between API calls to 2 seconds:**
+```bash
+python taxa_lookup.py 12345678 23456789 34567890 --delay 2.0
+```
+
+**Show API call count and debug information:**
+```bash
+python taxa_lookup.py 12345678 23456789 34567890 --count-api-calls --debug
+```
 
 ## Output Format
 
 ### Single Observation (Order Only)
 ```
-135240378: Agaricales
+12345678: Agaricales
 ```
 
 ### Single Observation (With Family)
 ```
-135240378: Order: Agaricales Family: Hymenogastraceae
+12345678: Order: Agaricales Family: Amanitaceae
 ```
 
 ### Multiple Observations (With Order Summary)
 ```
-135240378: Agaricales
+12345678: Agaricales
 23456789: Russulales
 34567890: Agaricales
 
@@ -142,13 +170,13 @@ Families within Russulales:
 You can process a list of observation IDs from a file using shell input redirection:
 
 ```bash
-python inat_orders.py $(cat observation_ids.txt) --family
+python taxa_lookup.py $(cat observation_ids.txt) --family
 ```
 
 Or using `xargs`:
 
 ```bash
-cat observation_ids.txt | xargs python inat_orders.py --family
+cat observation_ids.txt | xargs python taxa_lookup.py --family
 ```
 
 ### Redirecting Output to a File
@@ -156,7 +184,41 @@ cat observation_ids.txt | xargs python inat_orders.py --family
 Save the output to a file:
 
 ```bash
-python inat.orders.py 12345678 23456789 34567890 --family > taxonomy_report.txt
+python taxa_lookup.py 12345678 23456789 34567890 --family > taxonomy_report.txt
+```
+
+### Processing Large Sets of Observations
+
+When working with large datasets (thousands of observations), consider using the batch processing features:
+
+```bash
+python taxa_lookup.py $(cat large_dataset.txt) --batch-size 500 --batch-pause 60 --delay 2.0
+```
+
+This will:
+- Process observations in batches of 500
+- Pause for 60 seconds between batches to avoid rate limiting
+- Use a 2-second delay between individual API requests
+
+### Handling Rate Limits
+
+If you hit rate limits (429 errors), the tool will automatically:
+1. Retry with exponential backoff
+2. Save failed observation IDs to a file for later retry
+3. Adjust request delays to avoid further rate limiting
+
+To optimize for rate limit handling:
+
+```bash
+python taxa_lookup.py $(cat observations.txt) --delay 2.0 --retries 10 --retry-delay 10.0
+```
+
+### Resuming Interrupted Operations
+
+If a large batch processing job is interrupted, you can resume from a specific observation ID:
+
+```bash
+python taxa_lookup.py $(cat large_dataset.txt) --resume-from 23456789
 ```
 
 ### Error Handling
@@ -169,7 +231,7 @@ When taxonomic information cannot be retrieved, the tool provides informative er
 34567890: Error - API request failed: 404 Client Error: Not Found
 ```
 
-Errors will show up in summaries as unknown - this isnt necessarily an error, as some iNaturalist observations are already at order level, so don't have a family - or some genera aren't in any known family (incertae sedis) so there is no family information to get.
+Failed observations are saved to a timestamped file (e.g., `failed_observations_1616161616.txt`) that you can use for later retry attempts.
 
 ## API Rate Limits and Responsible Usage
 
@@ -191,21 +253,19 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the GNU GPL version 3 - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
 - [iNaturalist](https://www.inaturalist.org/) for providing the API that makes this tool possible
 - The global community of naturalists and citizen scientists who contribute observations to iNaturalist
-- The Ohio Mushroom DNA Lab (OMDL)
 
 ## Contact
 
-If you have any questions or feedback, please open an issue on this repository or contact Alan Rockefeller via email, social media or carrier pigeon.
+If you have any questions or feedback, please open an issue on this repository or email Alan Rockefeller.
 
 ## Donations
 
 If you like this tool, please consider making a donation to the Ohio Mushroom DNA Lab.
 https://www.ohiomushroomdnalab.com/donate
 
----
