@@ -1,3 +1,9 @@
+# inat.orders.py 
+
+# Version 1.2 - by Alan Rockefeller - March 19, 2025
+
+# https://github.com/AlanRockefeller/inat.orders.py
+
 import sys
 import requests
 import time
