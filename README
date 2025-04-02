@@ -1,6 +1,6 @@
 # iNaturalist Order / Family Counter
 
-# Version 1.2
+# Version 1.3
 
 # By Alan Rockefeller - March 19, 2025
 
@@ -25,7 +25,10 @@ alan@Dell-9700 ~/inat.orders.py (test)> python3 inat.orders.py --family (over 30
 
 - **Taxonomic Information Retrieval**: Extract order and family information from iNaturalist observation IDs
 - **Large runs are ok!**: Even large numbers of iNaturalist numbers can be processed into reports with this code
+- **Batch Processing**: Efficiently processes observations in batches of up to 200 records per API call
+- **Progress Bars**: Displays progress bars when processing large datasets (>100 observations)
 - **Smart Rate Limiting / Retries**: Respects iNaturalist API rate limits to prevent request throttling
+- **Output to File**: Easily save results to a file with the --outfile option
 - **Hierarchical Summaries**: Provides summaries of orders and optionally families within orders when processing multiple observations
 - **Flexible Output Options**: Customize the level of taxonomic detail and debugging information
 - **Count users**: Record who is making these observations
@@ -78,9 +81,9 @@ python3 inat.orders.py --family 262201758 262274361 261937401 261862641 26220165
 | `--max-delay MAX_DELAY` | Maximum delay between API calls when rate limited (default: 10.0) |
 | `--retry-delay RETRY_DELAY` | Initial retry delay in seconds (default: 5.0) |
 | `--retries RETRIES` | Maximum number of retry attempts (default: 5) |
-| `--batch-size BATCH_SIZE` | Process observations in batches of this size (default: 1000) |
-| `--batch-pause BATCH_PAUSE` | Pause in seconds between batches (default: 60.0) |
-| `--resume-from OBS_ID` | Resume from a specific observation ID |
+| `--batch-size BATCH_SIZE` | Number of observations to fetch in a single API call (default: 200, max: 200) |
+| `--no-batch` | Disable batch processing and fetch observations one at a time |
+| `-o`, `--outfile`, `--out` | Write output to the specified file instead of stdout |
 | `--count-api-calls` | Print the total number of API calls made |
 | `--debug` | Enable debug output for rate limiting and API calls |
 
@@ -103,7 +106,17 @@ python taxa_lookup.py 12345678 23456789 34567890 --delay 2.0
 
 **Show API call count and debug information:**
 ```bash
-python taxa_lookup.py 12345678 23456789 34567890 --count-api-calls --debug
+python3 inat.orders.py 12345678 23456789 34567890 --count-api-calls --debug
+```
+
+**Output results to a file:**
+```bash
+python3 inat.orders.py 12345678 23456789 34567890 -o results.txt
+```
+
+**Process a large dataset with progress bar:**
+```bash
+python3 inat.orders.py --file large_list_of_observations.txt
 ```
 
 ## Output Format
@@ -192,13 +205,12 @@ python taxa_lookup.py 12345678 23456789 34567890 --family > taxonomy_report.txt
 When working with large datasets (thousands of observations), consider using the batch processing features:
 
 ```bash
-python taxa_lookup.py $(cat large_dataset.txt) --batch-size 500 --batch-pause 60 --delay 2.0
+python3 inat.orders.py $(cat large_dataset.txt) --batch-size 200 --delay 2.0
 ```
 
 This will:
-- Process observations in batches of 500
-- Pause for 60 seconds between batches to avoid rate limiting
-- Use a 2-second delay between individual API requests
+- Process observations in batches of up to 200 per API call (the maximum allowed)
+- Use a 2-second delay between API requests to avoid rate limiting
 
 ### Handling Rate Limits
 
@@ -213,12 +225,12 @@ To optimize for rate limit handling:
 python taxa_lookup.py $(cat observations.txt) --delay 2.0 --retries 10 --retry-delay 10.0
 ```
 
-### Resuming Interrupted Operations
+### Disabling Batch Processing
 
-If a large batch processing job is interrupted, you can resume from a specific observation ID:
+If you prefer to process observations one at a time (e.g., for debugging):
 
 ```bash
-python taxa_lookup.py $(cat large_dataset.txt) --resume-from 23456789
+python3 inat.orders.py $(cat observation_ids.txt) --no-batch
 ```
 
 ### Error Handling

@@ -1,4 +1,0 @@
-# .coderabbit.yaml
-reviews:
-  branches:
-    - test  # Valid configuration for targeting test branch

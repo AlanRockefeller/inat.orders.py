@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3 - [2025-04-01]
+
+- Added batch processing to request up to 200 records per API call
+- Added --batch-size parameter (default: 200, max: 200) to control batch size
+- Added --no-batch flag to disable batch processing for debugging
+- Added progress bars for large datasets (>100 observations) using tqdm
+- Added -o/--outfile/--out option to save results to a file
+- Improved error handling with fallback to individual processing if a batch fails
+- Reduced overall API calls by processing observations in batches
+- Ensured strict rate limiting to never exceed 1 API request per second
+
 ## 1.2 - [2025-03-19]
 
 - Added better API rate limiting
