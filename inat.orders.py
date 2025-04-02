@@ -18,7 +18,6 @@ import sys
 import requests
 import time
 import argparse
-import os
 from collections import Counter, defaultdict
 from tqdm import tqdm
 
@@ -75,12 +74,11 @@ def make_api_request(url, min_delay=1.0, retries=3, retry_delay=2.0):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            if response.status_code == 429:  # Too Many Requests
-                if attempt < retries - 1:  # If we have more retries left
-                    if rate_limiter.debug:
-                        print(f"Rate limit exceeded. Waiting {retry_delay * (attempt + 1)} seconds...", file=sys.stderr)
-                    time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
-                    continue
+            if response.status_code == 429 and attempt < retries - 1:
+                if rate_limiter.debug:
+                    print(f"Rate limit exceeded. Waiting {retry_delay * (attempt + 1)} seconds...", file=sys.stderr)
+                time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+                continue
             # If it's not a rate limit or we're out of retries, re-raise
             raise e
         except Exception as e:
